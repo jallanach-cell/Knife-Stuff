@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pocket Knife Database</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        input, select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            grid-column: 1 / -1;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #764ba2;
+        }
+        
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .knife-card {
+            background: #f9f9f9;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .knife-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .knife-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .spec {
+            margin: 8px 0;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .spec strong {
+            color: #333;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔪 Pocket Knife Database</h1>
+        <p class="subtitle">Find knives based on your preferences using inequalities!</p>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label for="minHRC">Minimum HRC Rating:</label>
+                <input type="number" id="minHRC" placeholder="e.g., 55" min="0" max="70">
+            </div>
+            
+            <div class="filter-group">
+                <label for="maxHRC">Maximum HRC Rating:</label>
+                <input type="number" id="maxHRC" placeholder="e.g., 62" min="0" max="70">
+            </div>
+            
+            <div class="filter-group">
+                <label for="steelType">Steel Type:</label>
+                <select id="steelType">
+                    <option value="">All Types</option>
+                    <option value="Stainless">Stainless</option>
+                    <option value="Carbon">Carbon</option>
+                    <option value="Stainless Steel">Stainless Steel</option>
+                    <option value="High Carbon">High Carbon</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="minYear">Year Made (From):</label>
+                <input type="number" id="minYear" placeholder="e.g., 1950" min="1800" max="2024">
+            </div>
+            
+            <div class="filter-group">
+                <label for="maxYear">Year Made (To):</label>
+                <input type="number" id="maxYear" placeholder="e.g., 2000" min="1800" max="2024">
+            </div>
+            
+            <button onclick="filterKnives()">Search Knives</button>
+        </div>
+        
+        <div id="results" class="results"></div>
+    </div>
+    
+    <script>
+        // Sample knife database
+        const knives = [
+            {
+                name: "Victorinox Classic",
+                steel: "Stainless Steel",
+                hrc: 55,
+                year: 2010,
+                origin: "Switzerland",
+                description: "Reliable everyday carry"
+            },
+            {
+                name: "Opinel No. 8",
+                steel: "Carbon",
+                hrc: 58,
+                year: 1985,
+                origin: "France",
+                description: "Traditional French blade"
+            },
+            {
+                name: "Case Trapper",
+                steel: "Stainless",
+                hrc: 56,
+                year: 1970,
+                origin: "USA",
+                description: "Classic American design"
+            },
+            {
+                name: "Spyderco Paramilitary 2",
+                steel: "High Carbon",
+                hrc: 61,
+                year: 2015,
+                origin: "USA",
+                description: "Modern tactical blade"
+            },
+            {
+                name: "Kershaw Speedsafe",
+                steel: "Stainless Steel",
+                hrc: 57,
+                year: 2008,
+                origin: "USA",
+                description: "Assisted opening mechanism"
+            },
+            {
+                name: "Laguiole",
+                steel: "Carbon",
+                hrc: 60,
+                year: 1995,
+                origin: "France",
+                description: "Elegant vintage style"
+            },
+            {
+                name: "Buck 110",
+                steel: "Stainless",
+                hrc: 54,
+                year: 1962,
+                origin: "USA",
+                description: "Icon of American knives"
+            },
+            {
+                name: "Benchmade Griptilian",
+                steel: "High Carbon",
+                hrc: 62,
+                year: 2018,
+                origin: "USA",
+                description: "Premium everyday carry"
+            }
+        ];
+        
+        function filterKnives() {
+            const minHRC = parseInt(document.getElementById('minHRC').value) || 0;
+            const maxHRC = parseInt(document.getElementById('maxHRC').value) || 100;
+            const steelType = document.getElementById('steelType').value;
+            const minYear = parseInt(document.getElementById('minYear').value) || 1800;
+            const maxYear = parseInt(document.getElementById('maxYear').value) || 2024;
+            
+            // Use inequalities to filter
+            const filtered = knives.filter(knife => 
+                knife.hrc >= minHRC &&           // HRC greater than or equal to minimum
+                knife.hrc <= maxHRC &&           // HRC less than or equal to maximum
+                (steelType === '' || knife.steel === steelType) &&  // Steel type match
+                knife.year >= minYear &&         // Year greater than or equal to minimum
+                knife.year <= maxYear            // Year less than or equal to maximum
+            );
+            
+            displayResults(filtered);
+        }
+        
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results">No knives found matching your criteria. Try adjusting your filters!</div>';
+                return;
+            }
+            
+            resultsDiv.innerHTML = results.map(knife => `
+                <div class="knife-card">
+                    <h3>${knife.name}</h3>
+                    <div class="spec"><strong>Steel:</strong> ${knife.steel}</div>
+                    <div class="spec"><strong>HRC Rating:</strong> ${knife.hrc}</div>
+                    <div class="spec"><strong>Year Made:</strong> ${knife.year}</div>
+                    <div class="spec"><strong>Origin:</strong> ${knife.origin}</div>
+                    <div class="spec"><strong>Description:</strong> ${knife.description}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Display all knives on page load
+        window.onload = function() {
+            displayResults(knives);
+        };
+    </script>
+</body>
+</html>
